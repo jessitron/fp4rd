@@ -7,13 +7,14 @@
 # Visit http://www.pragmaticprogrammer.com/titles/ruby3 for more book information.
 #---
 require_relative 'csv_reader'
+require_relative 'book_in_stock'
 
-reader = CsvReader.new
+convert_row_to_book = ->(row) { BookInStock.from_row(row) }
+read_all_lines = ->(file) { CsvReader.new(file).to_a }
 
-ARGV.each do |csv_file_name|
-  STDERR.puts "Processing #{csv_file_name}"
-  reader.read_in_csv_data(csv_file_name)
-end
+all_books = ARGV.flat_map(&read_all_lines).map(&convert_row_to_book)
 
-puts "Total value = #{reader.total_value_in_stock}"
+total = BookInStock.sum_prices(all_books)
+
+puts("Total price: #{total}")
                                         
