@@ -1,4 +1,4 @@
-require_relative '../lib/csv_reader_2'
+require_relative '../lib/csv_reader'
 
 describe 'my really simple CSV reader' do
   let(:file_name) { 'tempitron' }
