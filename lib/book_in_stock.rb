@@ -15,4 +15,12 @@ class BookInStock
     @price = Float(price)
   end  
 
+  def self.from_row(row)
+     BookInStock.new(row["ISBN"], row["Amount"])
+  end
+
+  def self.sum_prices(books)
+    books.map(&:price).reduce(0){|a,b| a+b}
+  end
+
 end

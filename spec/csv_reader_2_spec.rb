@@ -6,7 +6,7 @@ describe 'my really simple CSV reader' do
   before do
     File.open(file_name, 'w+') do |f|
       f << "a,b,c,d\n"
-      f << "armadillo,banana,carrot,dog\n"
+      f << "armadillo,banana,,dog\n"
     end
   end
 
@@ -21,3 +21,4 @@ describe 'my really simple CSV reader' do
   end
 
 end
+

@@ -12,3 +12,5 @@ class CsvReader
     CSV.foreach(@file, headers: true) { |thing| block.call thing }
   end
 end
+
+
