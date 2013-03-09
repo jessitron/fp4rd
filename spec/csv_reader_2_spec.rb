@@ -5,7 +5,8 @@ describe 'my really simple CSV reader' do
 
   before do
     File.open(file_name, 'w+') do |f|
-      f << 'a,b,c,d'
+      f << "a,b,c,d\n"
+      f << "armadillo,banana,carrot,dog\n"
     end
   end
 
@@ -15,7 +16,8 @@ describe 'my really simple CSV reader' do
 
   it 'had better work' do
      result = CsvReader.new(file_name).to_a
-     result.length should equal 0
+     result.length.should == 1
+     result[0]["a"].should == "armadillo"
   end
 
 end
