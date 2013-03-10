@@ -1,11 +1,5 @@
-#---
-# Excerpted from "Programming Ruby",
-# published by The Pragmatic Bookshelf.
-# Copyrights apply to this code. It may not be used to create training material, 
-# courses, books, articles, and the like. Contact us if you are in doubt.
-# We make no guarantees that this code is fit for any purpose. 
-# Visit http://www.pragmaticprogrammer.com/titles/ruby3 for more book information.
-#---
+require_relative 'Either'
+
 class BookInStock      
   
   attr_reader :isbn, :price
@@ -16,7 +10,16 @@ class BookInStock
   end  
 
   def self.from_row(row)
-     BookInStock.new(row["ISBN"], row["Amount"])
+    isbn = row["ISBN"]
+    price = row["Amount"]
+    case
+    when isbn == nil
+      Either.new(error: "ISBN not defined on row #{row}")
+    when price == nil
+      Either.new(error: "Amount not defined on row #{row}")
+    else
+      Either.new(book: BookInStock.new(isbn, price))
+    end
   end
 
   def self.sum_prices(books)
