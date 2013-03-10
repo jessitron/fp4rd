@@ -1,8 +1,6 @@
 
 class Hash
   def map_values &block
-    result = Hash.new
-    self.each_pair {|k,v| result[k] =  block.call(v) }
-    result
+    self.reduce({}) {|h,(k,v)| h[k] =  block.call(v); h }
   end
 end
