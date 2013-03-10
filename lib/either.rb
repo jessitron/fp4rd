@@ -9,11 +9,11 @@ class Either
     @error = error
   end
 
-  def is_error?
+  def invalid?
     error != :none
   end
 
-  def is_book?
+  def book?
     book != :none
   end
 
