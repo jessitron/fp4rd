@@ -6,7 +6,11 @@ class BookInStock
 
   def initialize(isbn, price)
     @isbn  = isbn
-    @price = Float(price)
+    @price = price == :no_value_given ? price : Float(price)
+  end
+
+  def has_a_price?
+    price != :no_value_given
   end
 
   def self.from_row(row)

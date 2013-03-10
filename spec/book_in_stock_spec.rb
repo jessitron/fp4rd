@@ -25,6 +25,12 @@ describe BookInStock do
 
       it { should be_invalid }
     end
+
+    context 'Amount exists but is empty' do
+      let(:param) { { 'ISBN' => 'abc', 'Amount' => :no_value_given } }
+      it { should_not be_invalid }
+      its(:book) { should_not have_a_price }
+    end
   end
 
   describe 'price summation' do
