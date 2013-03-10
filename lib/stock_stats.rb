@@ -25,6 +25,11 @@ all_errors = all_results.select(&:invalid?).map(&:error)
 puts("  Time to sum!")
 total = BookInStock.sum_prices(all_books)
 
-puts("Total price on #{all_books.length} books: #{total}")
-puts("#{all_errors.length} lines were rejected")
+puts("  Counting books")
+qty = all_books.count
+puts("  Counting errors")
+errorCount = all_errors.count
+
+puts("Total price on #{qty} books: #{total}")
+puts("#{errorCount} lines were rejected")
 
