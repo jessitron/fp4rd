@@ -105,7 +105,15 @@ So yes, Ruby supports a functional style, WITH LAMBDAS.
 
 The difference between a program and software is error handling. (And security, and installation, and UI, and ...) What happens when a line in one of the input CSV files is invalid?
 
-We could raise an exception. But exceptions have a problem - they interrupt the flow of data. 
+We could raise an exception. But exceptions have a problem - they interrupt the flow of data. Why, when one line fails, should we stop processing all of them?
+
+In the real world, data quality is low. Don't freak out. Let that piece fall by the wayside and keep going. On the web, if we can't gather every single piece of information for a dashboard page, do we 500 Internal Server Error? I hope not. Display what we can, politely decline the rest, and let the user decide whether it is worth refreshing the page.
+
+A functional way to handle errors is the Either class. Either holds one of two things. In Haskell this is a generic type-parameterized class. For our purposes, Either needs to hold a book or an error message. (I've written it as concretely as possible because its purpose is clearer that way. Mental abstractions are useful immediately, and code abstractions get useful after about 3 repetitive implementations.)
+
+Once the Either class is available, the translation from CSV rows changes to output an Either(book or error). Then, we can select only the books for the price calculations. We can select the errors for reporting. This is the best we can do with inconsistent data.
+
+
 
 
 
