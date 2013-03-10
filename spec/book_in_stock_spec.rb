@@ -31,19 +31,23 @@ describe BookInStock do
     let(:four_dollar_book) { described_class.new("4D",4.00) }
     let(:two_fiddy_book) { described_class.new("4D",2.50) }
 
-    it 'gives 0 for 0 books' do
-      result = described_class.sum_prices([])
-      result.should == 0.0
+    subject { described_class.sum_prices books }
+
+    context 'no books' do
+      let(:books) { [] }
+      it { should == 0.0 }
     end
 
-    it 'gives 4 for one $4 book' do
-      result = described_class.sum_prices([four_dollar_book])
-      result.should == 4.0
+    context 'one $4 book' do
+      let(:books) { [four_dollar_book] }
+
+      it { should == 4.0 }
     end
 
-    it 'totals two books' do
-      result = described_class.sum_prices([four_dollar_book, two_fiddy_book])
-      result.should == 6.50
+    context 'two books provided' do
+      let(:books) { [four_dollar_book, two_fiddy_book] }
+
+      it { should == 6.50 }
     end
   end
 end
