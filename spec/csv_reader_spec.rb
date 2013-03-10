@@ -14,10 +14,20 @@ describe 'my really simple CSV reader' do
     File.delete file_name
   end
 
-  it 'had better work' do
-     result = CsvReader.new(file_name).to_a
-     result.length.should == 1
-     result[0]["a"].should == "armadillo"
+  subject { CsvReader.new(file_name).to_a }
+
+  its(:length) { should == 1 }
+
+  it 'read something' do
+     subject[0]["a"].should == "armadillo"
+  end
+
+  it 'gives nil for columns that do not exist in the header' do
+    subject[0]["boogerlizard"].should be_nil
+  end
+
+  it 'gives :no_value_given for columns that exist but are empty' do
+    subject[0]["c"].should == :no_value_given
   end
 
 end
