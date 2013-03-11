@@ -11,12 +11,12 @@ describe Hash do
       it { should == start_here }
     end
 
-    context 'always banana' do 
+    context 'always banana' do
       let(:block) { ->(a) { "banana" } }
 
       it 'has all bananas in its values' do
         value_equals_banana = ->(a) { a[1].should == "banana" }
-	subject.each_pair  &value_equals_banana
+        subject.each_pair &value_equals_banana
       end
     end
   end

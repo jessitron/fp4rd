@@ -1,6 +1,6 @@
 
 class Hash
   def map_values &block
-    self.reduce({}) {|h,(k,v)| h[k] =  block.call(v); h }
+    self.each_with_object({}) {|(k,v), h| h[k] = block.call(v) }
   end
 end
