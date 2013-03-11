@@ -14,11 +14,11 @@ end
 all_results = ARGV.lazy.
   flat_map(&printing.("--- Reading file...", read_all_lines)).
   map(&printing.("1. Converting book", convert_row_to_book)).
-  map(&printing.("2. Checking that price is populated",reject_no_price))
+  map(&printing.("2. Checking price",reject_no_price))
 
 all_books = all_results.
-  select(&printing.("3. Taking only valid books",->(a) {a.book?})).
-  map(&printing.("3a. Extracting the book from it",->(a) {a.book}))
+  select(&printing.("3. Valid books",->(a) {a.book?})).
+  map(&printing.("3a. Extracting book",->(a) {a.book}))
 
 all_errors = all_results.select(&:invalid?).map(&:error)
 
