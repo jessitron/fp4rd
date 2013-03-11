@@ -26,6 +26,7 @@ class BookInStock
   end
 
   def self.sum_prices(books)
-    books.map(&:price).reduce(0){|a,b| a+b}
+    sum = ->(a,b) {a+b}
+    books.map(&:price).reduce(0,&sum)
   end
 end
