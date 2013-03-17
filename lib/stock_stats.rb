@@ -1,6 +1,20 @@
 require_relative 'csv_reader'
 require_relative 'book_in_stock'
 
+one = ->(a) { 1 }
+
+pipe = new PipelineBuilder(ARGV).
+  through(read_all_lines).
+  through(convert_row_to_book).
+  through(reject_no_price).
+  keeping(&:book?).
+  through(&:book).
+  split({ :total => ->(a) { a.answer(Monoid.plus)},
+          :count => ->(b) { b.through(&one).answer(Monoid.plus)}})
+  answer(Monoid.plus)
+
+total = pipe.answer()
+
 printing = ->(message, map_func) { ->(a) { puts message; map_func.call(a)} }
 convert_row_to_book = ->(row) { BookInStock.from_row(row) }
 read_all_lines = ->(file) { CsvReader.new(file).to_a }
