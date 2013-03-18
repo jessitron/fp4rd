@@ -2,12 +2,58 @@
 class PipelineBuilder
   def initialize(source)
     @source = source
+    @doTheseThings = []
+  end
+
+  def take(how_many)
+    @doTheseThings.push(takeFunction(how_many))
+    self
   end
 
   def answer(monoid)
-    Inlet.new(@source, EndPiece.new(monoid))
+    answer_int(EndPiece.new(monoid))
+  end
+
+  def takeFunction(how_many) # this will either return a Result or a Piece
+    what_to_do = ->(piece, msg) do
+      if (how_many == 0) then # this is a little inefficient. One extra piece of info will be read
+        piece.sendEof
+      else
+        piece.passOn(msg, takeFunction(how_many -1))
+      end
+    end
+    what_to_do
+  end
+
+  def answer_int(piece)
+    if (@doTheseThings.empty?)
+      Inlet.new(@source, piece)
+    else
+      answer_int(Piece.new(piece, @doTheseThings.pop))
+    end
   end
 end
+
+class Piece
+  def initialize(destination, what_to_do)
+    @destination = destination
+    @what_to_do = what_to_do
+  end
+  def receive(msg)
+    @what_to_do.call(self, msg)
+  end
+  def eof
+    sendEof
+  end
+  def passOn(msg, what_to_do_next)
+    next_destination = @destination.receive(msg)
+    Piece.new(next_destination, what_to_do_next)
+  end
+  def sendEof
+    @destination.eof
+  end
+end
+
 
 class Inlet
   def initialize(source, nextPiece)
@@ -17,7 +63,12 @@ class Inlet
 
   def flow
     result = begin
-      Inlet.new(@source, @nextPiece.receive(@source.next)).flow
+      response = @nextPiece.receive(@source.next)
+      if (response.is_a? Result) then
+        response
+      else #it's another piece
+        Inlet.new(@source, response).flow
+      end
     rescue StopIteration
       @nextPiece.eof
     end
@@ -25,12 +76,7 @@ class Inlet
 
 end
 
-module Piece
-
-end
-
 class EndPiece
-  include Piece
   def initialize(monoid)
     @monoid = monoid
     @soFar = monoid.zero

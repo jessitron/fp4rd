@@ -6,4 +6,9 @@ describe 'this weird pipeline thing' do
     result.flow().value == "hello"
   end
 
+  it 'can stop in the middle' do
+    result = PipelineBuilder.new(["one", "two", "three","four"]).take(2).answer(Monoid.concat)
+    result.flow().value == "onetwo"
+  end
+
 end
