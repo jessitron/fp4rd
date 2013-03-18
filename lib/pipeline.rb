@@ -100,6 +100,7 @@ class PartialBuilder
   def initialize
     @doTheseThings = []
   end
+
   def answer_int(piece)
     if (@doTheseThings.empty?)
       piece
@@ -113,8 +114,9 @@ class JointPiece
   def initialize(paths)
     @paths = paths
   end
+
   def receive(msg)
-    go = ->(v) { if (v.is_a? Result) then v else v.receive(msg) end }
+    go = ->(v) { v.is_a?(Result) ? v : v.receive(msg) }
     newMap = @paths.map_values(&go)
     is_result = ->(p) {p.is_a? Result}
     if (newMap.values.all? &is_result )
@@ -123,12 +125,14 @@ class JointPiece
       JointPiece.new(newMap)
     end
   end
+
   def eof
-    go = ->(v) { if (v.is_a? Result) then v else v.eof end }
+    go = ->(v) { v.is_a?(Result) ? v : v.eof }
     newMap = @paths.map_values(&go)
     construct_compound_result(newMap)
   end
-  #private
+
+  private
   def construct_compound_result(paths)
     CompoundResult.new(paths)
   end
@@ -142,6 +146,7 @@ class CompoundResult
   def initialize(paths)
     @contents = paths
   end
+
   def value(path)
     if(path.is_a? Array) then
       if (path.length == 1) then
@@ -154,21 +159,24 @@ class CompoundResult
       @contents[path].value
     end
   end
-
 end
 
 class Piece
   attr_reader :destination
+
   def initialize(destination, what_to_do)
     @destination = destination
     @what_to_do = what_to_do
   end
+
   def receive(msg)
     @what_to_do.call(self, msg)
   end
+
   def eof
     sendEof
   end
+
   def passOn(msg, what_to_do_next)
     next_destination = @destination.receive(msg)
     Piece.new(next_destination, what_to_do_next)
@@ -177,7 +185,6 @@ class Piece
     @destination.eof
   end
 end
-
 
 class Inlet
   def initialize(source, nextPiece, done_or_not = :done)
@@ -202,7 +209,6 @@ class Inlet
       end
     end
   end
-
 end
 
 class CountingEndPiece
@@ -263,6 +269,5 @@ class SimpleResult
   def value
     @value
   end
-
 end
 
