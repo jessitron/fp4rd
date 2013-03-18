@@ -22,4 +22,21 @@ describe 'this weird pipeline thing' do
     result = PipelineBuilder.new(["one", "two"]).through(reverse).answer(Monoid.concat)
     result.flow().value.should == "enoowt"
   end
+
+  it 'can add integers' do
+    result = PipelineBuilder.new([1,2,3]).answer(Monoid.plus)
+    result.flow().value.should == 6
+  end
+
+  printing = ->(message, map_func) { ->(a) { puts message; map_func.call(a)} }
+
+  it 'can widen the pipe' do
+    array_of_chars = ->(s) {s.each_char}
+    is_vowel = ->(c) {"aeiou".include?(c)}
+    result = PipelineBuilder.new(["one","two"]).
+      expand(array_of_chars).
+      keeping(is_vowel).
+      answer(Monoid.concat)
+    result.flow().value.should == "oeo"
+  end
 end

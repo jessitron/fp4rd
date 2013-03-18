@@ -24,6 +24,11 @@ class PipelineBuilder
     answer_int(EndPiece.new(monoid))
   end
 
+  def expand(transform)
+    @doTheseThings.push(expandFunction(transform))
+    self
+  end
+
   # private below here
   def takeFunction(how_many) # this will either return a Result or a Piece
     what_to_do = ->(piece, msg) do
@@ -34,6 +39,17 @@ class PipelineBuilder
       end
     end
     what_to_do
+  end
+
+  def expandFunction(expansion)
+    ->(piece, msg) do
+      nextPiece = Inlet.new(expansion.call(msg), piece.destination, :not_done).flow()
+      if (nextPiece.is_a? Result) then
+        nextPiece
+      else
+        Piece.new(nextPiece, expandFunction(expansion))
+      end
+    end
   end
 
   def mapFunction(transform)
@@ -62,6 +78,7 @@ class PipelineBuilder
 end
 
 class Piece
+  attr_reader :destination
   def initialize(destination, what_to_do)
     @destination = destination
     @what_to_do = what_to_do
@@ -83,9 +100,10 @@ end
 
 
 class Inlet
-  def initialize(source, nextPiece)
+  def initialize(source, nextPiece, done_or_not = :done)
     @source = source.each #iterator
     @nextPiece = nextPiece
+    @done_or_not = done_or_not
   end
 
   def flow
@@ -94,10 +112,14 @@ class Inlet
       if (response.is_a? Result) then
         response
       else #it's another piece
-        Inlet.new(@source, response).flow
+        Inlet.new(@source, response, @done_or_not).flow
       end
     rescue StopIteration
-      @nextPiece.eof
+      if (@done_or_not == :done) then
+        @nextPiece.eof
+      else
+        @nextPiece
+      end
     end
   end
 
@@ -129,8 +151,13 @@ class Monoid
   def append(a,b)
     @append.call(a,b)
   end
+
+  # instances
   def self.concat
     Monoid.new("", ->(a,b) {a + b})
+  end
+  def self.plus
+    Monoid.new(0,  ->(a,b) {a + b})
   end
 end
 

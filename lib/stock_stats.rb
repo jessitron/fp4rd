@@ -1,19 +1,7 @@
 require_relative 'csv_reader'
 require_relative 'book_in_stock'
+require_relative 'pipeline'
 
-one = ->(a) { 1 }
-
-pipe = new PipelineBuilder(ARGV).
-  through(read_all_lines).
-  through(convert_row_to_book).
-  through(reject_no_price).
-  keeping(&:book?).
-  through(&:book).
-  split({ :total => ->(a) { a.answer(Monoid.plus)},
-          :count => ->(b) { b.through(&one).answer(Monoid.plus)}})
-  answer(Monoid.plus)
-
-total = pipe.answer()
 
 printing = ->(message, map_func) { ->(a) { puts message; map_func.call(a)} }
 convert_row_to_book = ->(row) { BookInStock.from_row(row) }
@@ -25,25 +13,16 @@ reject_no_price = ->(either) do
   end
 end
 
-all_results = ARGV.lazy.
-  flat_map(&printing.("--- Reading file...", read_all_lines)).
-  map(&printing.("1. Converting book", convert_row_to_book)).
-  map(&printing.("2. Checking price",reject_no_price))
+pipe = PipelineBuilder.new(ARGV).
+  through(printing.("--- Reading file...",read_all_lines)).
+  through(printing.("1. Converting book",convert_row_to_book)).
+  through(printing.("2. Checking price",reject_no_price)).
+  keeping(printing.("3a. Checking book", ->(a){a.book?})).
+  through(printing.("3b. Extracting book", ->(a){a.book})).
+  through(printing.("4. Pricing",->(a){a.price})).
+  answer(Monoid.plus)
 
-all_books = all_results.
-  select(&printing.("3. Valid books",->(a) {a.book?})).
-  map(&printing.("3a. Extracting book",->(a) {a.book}))
+total = pipe.flow().value
 
-all_errors = all_results.select(&:invalid?).map(&:error)
-
-puts("  Time to sum!")
-total = BookInStock.sum_prices(all_books)
-
-puts("  Counting books")
-qty = all_books.count
-puts("  Counting errors")
-errorCount = all_errors.count
-
-puts("Total price on #{qty} books: #{total}")
-puts("#{errorCount} lines were rejected")
+puts("Total price: #{total}")
 
