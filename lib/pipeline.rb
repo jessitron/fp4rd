@@ -25,18 +25,20 @@ module Buildering
     self
   end
 
-
   def expand(transform)
     @doTheseThings.push(expandFunction(transform))
     self
   end
 
   def split(paths)
-    partial = ->(v) { v.call(PartialBuilder.new)}
     answer_int(JointPiece.new(paths.map_values( &partial)))
   end
 
-  # private below here
+  module_function
+  def partial
+    ->(v) { v.call(PartialBuilder.new)}
+  end
+
   def takeFunction(how_many) # this will either return a Result or a Piece
     what_to_do = ->(piece, msg) do
       if (how_many == 0) then # this is a little inefficient. One extra piece of info will be read
