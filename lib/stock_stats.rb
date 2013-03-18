@@ -14,7 +14,7 @@ reject_no_price = ->(either) do
 end
 
 pipe = PipelineBuilder.new(ARGV).
-  through(printing.("--- Reading file...",read_all_lines)).
+  expand(printing.("--- Reading file...",read_all_lines)).
   through(printing.("1. Converting book",convert_row_to_book)).
   through(printing.("2. Checking price",reject_no_price)).
   keeping(printing.("3a. Checking book", ->(a){a.book?})).
