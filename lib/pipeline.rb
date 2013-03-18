@@ -6,6 +6,10 @@ module Buildering
     answer_int(EndPiece.new(monoid))
   end
 
+  def count
+    answer_int(CountingEndPiece.new)
+  end
+
   def take(how_many)
     @doTheseThings.push(takeFunction(how_many))
     self
@@ -199,6 +203,18 @@ class Inlet
 
 end
 
+class CountingEndPiece
+  def initialize(soFar = 0)
+    @soFar = soFar
+  end
+  def eof
+    SimpleResult.new(@soFar)
+  end
+  def receive msg
+    CountingEndPiece.new(@soFar + 1)
+  end
+end
+
 class EndPiece
   def initialize(monoid)
     @monoid = monoid
@@ -210,7 +226,7 @@ class EndPiece
   end
 
   def receive msg
-    @soFar = @monoid.append(@soFar, msg)
+    @soFar = @monoid.append(@soFar, msg) #could easily be made stateless
     self
   end
 end

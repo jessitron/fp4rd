@@ -12,19 +12,18 @@ reject_no_price = ->(either) do
   else Either.new(error: "No price on book")
   end
 end
-one = ->(a) {1}
 
-#todo: implement count; it's cleaner. And partition would be cleaner too.
+#todo: implement partition, cleaner than split and check both sides
 
 pipe = PipelineBuilder.new(ARGV).
   expand(printing.("--- Reading file...",read_all_lines)).
   through(printing.("1. Converting book",convert_row_to_book)).
   through(printing.("2. Checking price",reject_no_price)).
   split({
-    :invalid => ->(a) { a.keeping(->(a){a.invalid?}).through(one).answer(Monoid.plus)},
+    :invalid => ->(a) { a.keeping(->(a){a.invalid?}).count},
     :valid => ->(a) {
       a.keeping(printing.("3a. Checking book", ->(a){a.book?})).
-      split({ :count => ->(a) {a.through(one).answer(Monoid.plus)},
+      split({ :count => ->(a) {a.count},
               :total => ->(a) { a.
         through(printing.("3b. Extracting book", ->(a){a.book})).
         through(printing.("4. Pricing",->(a){a.price})).

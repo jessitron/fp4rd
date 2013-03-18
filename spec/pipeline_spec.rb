@@ -40,8 +40,6 @@ describe 'this weird pipeline thing' do
     result.flow().value.should == "oeo"
   end
 
-  # todo: test split immediately after expansion
-
   it 'can split the pipe' do
     double = ->(a) { a * 2}
     result = PipelineBuilder.new([1,2,3]).
@@ -64,6 +62,21 @@ describe 'this weird pipeline thing' do
     output.value(:first).should == "onetwo"
     output.value([:second,:third]).should == "one"
     output.value([:second,:fourth]).should == "onetwo"
+  end
+
+  it 'can split immediately after an expansion' do
+    array_of_chars = ->(s) {s.each_char}
+    is_vowel = ->(c) {"aeiou".include?(c)}
+    notnot = ->(p) { ->(a) {!p.call(a)}}
+    result = PipelineBuilder.new(["one","two"]).
+      expand(array_of_chars).
+      split({ :vowels => ->(a) {a.keeping(is_vowel).count},
+             :consonants => ->(a) {a.keeping(notnot.(is_vowel)).count}
+      })
+    output = result.flow()
+    output.value(:vowels).should == 3
+    output.value(:consonants).should == 3
+
   end
 
 end
