@@ -39,4 +39,31 @@ describe 'this weird pipeline thing' do
       answer(Monoid.concat)
     result.flow().value.should == "oeo"
   end
+
+  # todo: test split immediately after expansion
+
+  it 'can split the pipe' do
+    double = ->(a) { a * 2}
+    result = PipelineBuilder.new([1,2,3]).
+      split({ :total => ->(a) {a.answer(Monoid.plus)},
+              :doubleTheFirst => ->(a) {a.take(1).through(double).answer(Monoid.plus)}})
+    answer = result.flow()
+    answer.value(:total).should == 6
+    answer.value(:doubleTheFirst).should == 2
+  end
+
+  it 'can nest splits and follow the paths' do
+    result = PipelineBuilder.new(["one","two"]).
+      split(:first => ->(a) {a.answer(Monoid.concat)},
+            :second => ->(a) {a.
+        split( :third => ->(a) { a.take(1).answer(Monoid.concat)},
+               :fourth => ->(a) { a.answer(Monoid.concat)}
+             )
+    })
+    output = result.flow()
+    output.value(:first).should == "onetwo"
+    output.value([:second,:third]).should == "one"
+    output.value([:second,:fourth]).should == "onetwo"
+  end
+
 end

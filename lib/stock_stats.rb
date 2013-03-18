@@ -12,17 +12,32 @@ reject_no_price = ->(either) do
   else Either.new(error: "No price on book")
   end
 end
+one = ->(a) {1}
+
+#todo: implement count; it's cleaner. And partition would be cleaner too.
 
 pipe = PipelineBuilder.new(ARGV).
   expand(printing.("--- Reading file...",read_all_lines)).
   through(printing.("1. Converting book",convert_row_to_book)).
   through(printing.("2. Checking price",reject_no_price)).
-  keeping(printing.("3a. Checking book", ->(a){a.book?})).
-  through(printing.("3b. Extracting book", ->(a){a.book})).
-  through(printing.("4. Pricing",->(a){a.price})).
-  answer(Monoid.plus)
+  split({
+    :invalid => ->(a) { a.keeping(->(a){a.invalid?}).through(one).answer(Monoid.plus)},
+    :valid => ->(a) {
+      a.keeping(printing.("3a. Checking book", ->(a){a.book?})).
+      split({ :count => ->(a) {a.through(one).answer(Monoid.plus)},
+              :total => ->(a) { a.
+        through(printing.("3b. Extracting book", ->(a){a.book})).
+        through(printing.("4. Pricing",->(a){a.price})).
+        answer(Monoid.plus)
+      }})
+  }})
 
-total = pipe.flow().value
+result = pipe.flow()
 
-puts("Total price: #{total}")
+total = result.value([:valid,:total])
+count = result.value([:valid,:count])
+errors = result.value(:invalid)
+
+puts("Total price for #{count} books: #{total}")
+puts("There were #{errors} invalid lines")
 

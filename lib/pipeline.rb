@@ -1,8 +1,9 @@
+require_relative 'improved_hash'
 
-class PipelineBuilder
-  def initialize(source)
-    @source = source
-    @doTheseThings = []
+
+module Buildering
+  def answer(monoid)
+    answer_int(EndPiece.new(monoid))
   end
 
   def take(how_many)
@@ -20,13 +21,15 @@ class PipelineBuilder
     self
   end
 
-  def answer(monoid)
-    answer_int(EndPiece.new(monoid))
-  end
 
   def expand(transform)
     @doTheseThings.push(expandFunction(transform))
     self
+  end
+
+  def split(paths)
+    partial = ->(v) { v.call(PartialBuilder.new)}
+    answer_int(JointPiece.new(paths.map_values( &partial)))
   end
 
   # private below here
@@ -68,6 +71,15 @@ class PipelineBuilder
     end
   end
 
+end
+
+class PipelineBuilder
+  include Buildering
+  def initialize(source)
+    @source = source
+    @doTheseThings = []
+  end
+
   def answer_int(piece)
     if (@doTheseThings.empty?)
       Inlet.new(@source, piece)
@@ -75,6 +87,68 @@ class PipelineBuilder
       answer_int(Piece.new(piece, @doTheseThings.pop))
     end
   end
+end
+
+class PartialBuilder
+  include Buildering
+  def initialize
+    @doTheseThings = []
+  end
+  def answer_int(piece)
+    if (@doTheseThings.empty?)
+      piece
+    else
+      answer_int(Piece.new(piece, @doTheseThings.pop))
+    end
+  end
+end
+
+class JointPiece
+  def initialize(paths)
+    @paths = paths
+  end
+  def receive(msg)
+    go = ->(v) { if (v.is_a? Result) then v else v.receive(msg) end }
+    newMap = @paths.map_values(&go)
+    is_result = ->(p) {p.is_a? Result}
+    if (newMap.values.all? &is_result )
+      construct_compound_result(newMap)
+    else
+      JointPiece.new(newMap)
+    end
+  end
+  def eof
+    go = ->(v) { if (v.is_a? Result) then v else v.eof end }
+    newMap = @paths.map_values(&go)
+    construct_compound_result(newMap)
+  end
+  #private
+  def construct_compound_result(paths)
+    CompoundResult.new(paths)
+  end
+end
+
+module Result
+end
+
+class CompoundResult
+  include Result
+  def initialize(paths)
+    @contents = paths
+  end
+  def value(path)
+    if(path.is_a? Array) then
+      if (path.length == 1) then
+        @contents[path[0]].value
+      else
+        (head, *tail) = path
+        @contents[head].value(tail)
+      end
+    else
+      @contents[path].value
+    end
+  end
+
 end
 
 class Piece
@@ -132,7 +206,7 @@ class EndPiece
   end
 
   def eof
-    Result.new(@soFar)
+    SimpleResult.new(@soFar)
   end
 
   def receive msg
@@ -161,10 +235,16 @@ class Monoid
   end
 end
 
-class Result
-  attr_reader :value
+
+class SimpleResult
+  include Result
   def initialize(value)
     @value = value
   end
+
+  def value
+    @value
+  end
+
 end
 
