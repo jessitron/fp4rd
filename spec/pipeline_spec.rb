@@ -43,19 +43,19 @@ describe 'this weird pipeline thing' do
   it 'can split the pipe' do
     double = ->(a) { a * 2}
     result = PipelineBuilder.new([1,2,3]).
-      split({ :total => ->(a) {a.answer(Monoid.plus)},
-              :doubleTheFirst => ->(a) {a.take(1).through(double).answer(Monoid.plus)}})
+      split({ total: ->(a) {a.answer(Monoid.plus)},
+              double_the_first: ->(a) {a.take(1).through(double).answer(Monoid.plus)}})
     answer = result.flow()
     answer.value(:total).should == 6
-    answer.value(:doubleTheFirst).should == 2
+    answer.value(:double_the_first).should == 2
   end
 
   it 'can nest splits and follow the paths' do
     result = PipelineBuilder.new(["one","two"]).
-      split(:first => ->(a) {a.answer(Monoid.concat)},
-            :second => ->(a) {a.
-        split( :third => ->(a) { a.take(1).answer(Monoid.concat)},
-               :fourth => ->(a) { a.answer(Monoid.concat)}
+      split(first:  ->(a) {a.answer(Monoid.concat)},
+            second: ->(a) {a.
+        split(third: ->(a) { a.take(1).answer(Monoid.concat)},
+               fourth: ->(a) { a.answer(Monoid.concat)}
              )
     })
     output = result.flow()
@@ -68,14 +68,14 @@ describe 'this weird pipeline thing' do
     array_of_chars = ->(s) {s.each_char}
     is_vowel = ->(c) {"aeiou".include?(c)}
     notnot = ->(p) { ->(a) {!p.call(a)}}
-    result = PipelineBuilder.new(["one","two"]).
+    result = PipelineBuilder.new(["one","two", "three"]).
       expand(array_of_chars).
-      split({ :vowels => ->(a) {a.keeping(is_vowel).count},
-             :consonants => ->(a) {a.keeping(notnot.(is_vowel)).count}
+      split({ vowels: ->(a) {a.keeping(is_vowel).count},
+             consonants: ->(a) {a.keeping(notnot.(is_vowel)).count}
       })
     output = result.flow()
-    output.value(:vowels).should == 3
-    output.value(:consonants).should == 3
+    output.value(:vowels).should == 5
+    output.value(:consonants).should == 6
 
   end
 
