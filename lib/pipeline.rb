@@ -10,10 +10,21 @@ class PipelineBuilder
     self
   end
 
+  def keeping(predicate)
+    @doTheseThings.push(filterFunction(predicate))
+    self
+  end
+
+  def through(transform)
+    @doTheseThings.push(mapFunction(transform))
+    self
+  end
+
   def answer(monoid)
     answer_int(EndPiece.new(monoid))
   end
 
+  # private below here
   def takeFunction(how_many) # this will either return a Result or a Piece
     what_to_do = ->(piece, msg) do
       if (how_many == 0) then # this is a little inefficient. One extra piece of info will be read
@@ -23,6 +34,22 @@ class PipelineBuilder
       end
     end
     what_to_do
+  end
+
+  def mapFunction(transform)
+    ->(piece, msg) do
+      piece.passOn(transform.call(msg), mapFunction(transform))
+    end
+  end
+
+  def filterFunction(predicate)
+    ->(piece, msg) do
+      if(predicate.call(msg)) then
+        piece.passOn(msg, filterFunction(predicate))
+      else
+        piece #don't change
+      end
+    end
   end
 
   def answer_int(piece)
