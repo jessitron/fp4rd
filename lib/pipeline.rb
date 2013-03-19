@@ -11,22 +11,22 @@ module Buildering
   end
 
   def take(how_many)
-    @doTheseThings.push(takeFunction(how_many))
+    @do_these_things.push(takeFunction(how_many))
     self
   end
 
   def keeping(predicate)
-    @doTheseThings.push(filterFunction(predicate))
+    @do_these_things.push(filterFunction(predicate))
     self
   end
 
   def through(transform)
-    @doTheseThings.push(mapFunction(transform))
+    @do_these_things.push(mapFunction(transform))
     self
   end
 
   def expand(transform)
-    @doTheseThings.push(expandFunction(transform))
+    @do_these_things.push(expandFunction(transform))
     self
   end
 
@@ -83,14 +83,14 @@ class PipelineBuilder
   include Buildering
   def initialize(source)
     @source = source
-    @doTheseThings = []
+    @do_these_things = []
   end
 
   def answer_int(piece)
-    if (@doTheseThings.empty?)
+    if (@do_these_things.empty?)
       Inlet.new(@source, piece)
     else
-      answer_int(Piece.new(piece, @doTheseThings.pop))
+      answer_int(Piece.new(piece, @do_these_things.pop))
     end
   end
 end
@@ -98,14 +98,14 @@ end
 class PartialBuilder
   include Buildering
   def initialize
-    @doTheseThings = []
+    @do_these_things = []
   end
 
   def answer_int(piece)
-    if (@doTheseThings.empty?)
+    if (@do_these_things.empty?)
       piece
     else
-      answer_int(Piece.new(piece, @doTheseThings.pop))
+      answer_int(Piece.new(piece, @do_these_things.pop))
     end
   end
 end
