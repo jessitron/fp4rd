@@ -8,51 +8,41 @@ describe PipelineBuilder do
 
     subject { builder.answer(Monoid.concat).flow().value }
 
-    describe 'can give an answer' do
+    describe 'giving an answer' do
       let(:input) { ["hello"] }
 
       it { should == 'hello' }
     end
 
-    describe 'can stop in the middle' do
+    describe 'stopping in the middle' do
       let(:builder) { new_builder.take(2) }
 
       it { should == "onetwo" }
     end
 
-    describe 'can filter' do
+    describe 'filtering' do
       let(:starts_with_t) { ->(s) {s[0] == "t"} }
       let(:builder) { new_builder.keeping(starts_with_t) }
 
       it { should == "twothree" }
     end
 
-    describe 'can map' do
+    describe 'mapping' do
       let(:reverse) { ->(a) { a.reverse} }
       let(:builder) { new_builder.through(reverse) }
       it { should == "enoowteerht" }
     end
   end
 
-  describe 'interaction with integers' do
+  describe 'interacting with integers' do
     let(:input) { [1,2,3]}
     let(:new_builder) { PipelineBuilder.new(input) }
     let(:builder) { new_builder }
 
     subject { builder.answer(Monoid.plus).flow().value }
 
-    describe 'can add integers' do
+    describe 'adding' do
       it { should == 6 }
-    end
-
-    it 'can widen the pipe' do
-      array_of_chars = ->(s) {s.each_char}
-      is_vowel = ->(c) {"aeiou".include?(c)}
-      result = PipelineBuilder.new(["one","two"]).
-        expand(array_of_chars).
-        keeping(is_vowel).
-        answer(Monoid.concat)
-      result.flow().value.should == "oeo"
     end
 
     it 'can split the pipe' do
@@ -63,6 +53,18 @@ describe PipelineBuilder do
       answer = result.flow()
       answer.value(:total).should == 6
       answer.value(:double_the_first).should == 2
+    end
+  end
+
+  describe 'interacting with characters' do
+    it 'can widen the pipe' do
+      array_of_chars = ->(s) {s.each_char}
+      is_vowel = ->(c) {"aeiou".include?(c)}
+      result = PipelineBuilder.new(["one","two"]).
+        expand(array_of_chars).
+        keeping(is_vowel).
+        answer(Monoid.concat)
+      result.flow().value.should == "oeo"
     end
 
     it 'can nest splits and follow the paths' do
@@ -91,7 +93,6 @@ describe PipelineBuilder do
       output = result.flow()
       output.value(:vowels).should == 5
       output.value(:consonants).should == 6
-
     end
   end
 end
