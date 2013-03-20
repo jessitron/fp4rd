@@ -3,10 +3,10 @@ require_relative '../lib/pipeline'
 describe PipelineBuilder do
   describe 'this weird pipeline thing' do
     let(:input) { ["one","two","three"]}
-    let(:new_builder) { PipelineBuilder.new(input) }
+    let(:new_builder) { PipelineBuilder.new() }
     let(:builder) { new_builder }
 
-    subject { builder.answer(Monoid.concat).flow().value }
+    subject { builder.answer(Monoid.concat).flow(input).value }
 
     describe 'giving an answer' do
       let(:input) { ["hello"] }
@@ -36,10 +36,10 @@ describe PipelineBuilder do
 
   describe 'interacting with integers' do
     let(:input) { [1,2,3]}
-    let(:new_builder) { PipelineBuilder.new(input) }
+    let(:new_builder) { PipelineBuilder.new() }
     let(:builder) { new_builder }
 
-    subject { builder.flow().value }
+    subject { builder.flow(input).value }
 
     describe 'adding' do
       let(:builder) { new_builder.answer(Monoid.plus) }
@@ -62,14 +62,15 @@ describe PipelineBuilder do
   end
 
   describe 'interacting with characters' do
+    let(:input) {["one","two"]}
     it 'can widen the pipe' do
       array_of_chars = ->(s) {s.each_char}
       is_vowel = ->(c) {"aeiou".include?(c)}
-      result = PipelineBuilder.new(["one","two"]).
+      result = PipelineBuilder.new().
         expand(array_of_chars).
         keeping(is_vowel).
         answer(Monoid.concat)
-      result.flow().value.should == "oeo"
+      result.flow(input).value.should == "oeo"
     end
 
     #         /---------------------\
@@ -83,14 +84,14 @@ describe PipelineBuilder do
     #                       \    :concatenatedAgain = concatenated: "onetwo"
     #                        \----------------------/
     it 'can nest splits and follow the paths' do
-      result = PipelineBuilder.new(["one","two"]).
+      result = PipelineBuilder.new().
         split(allConcatenated:  ->(a) {a.answer(Monoid.concat)},
               all: ->(a) {a.
                 split(onlyFirst: ->(a) { a.take(1).answer(Monoid.concat)},
                       concatenatedAgain: ->(a) { a.answer(Monoid.concat)}
                      )
       })
-      output = result.flow()
+      output = result.flow(input)
       output.value(:allConcatenated).should == "onetwo"
       output.value([:all,:onlyFirst]).should == "one"
       output.value([:all,:concatenatedAgain]).should == "onetwo"
@@ -100,12 +101,12 @@ describe PipelineBuilder do
       array_of_chars = ->(s) {s.each_char}
       is_vowel = ->(c) {"aeiou".include?(c)}
       notnot = ->(p) { ->(a) {!p.call(a)}}
-      result = PipelineBuilder.new(["one","two", "three"]).
+      result = PipelineBuilder.new().
         expand(array_of_chars).
         split({ vowels: ->(a) {a.keeping(is_vowel).count},
               consonants: ->(a) {a.keeping(notnot.(is_vowel)).count}
       })
-      output = result.flow()
+      output = result.flow(["one","two", "three"])
       output.value(:vowels).should == 5
       output.value(:consonants).should == 6
     end

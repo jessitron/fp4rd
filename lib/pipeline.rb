@@ -52,7 +52,7 @@ module Buildering
 
   def expandFunction(expansion)
     ->(piece, msg) do
-      nextPiece = Inlet.new(expansion.call(msg), piece.destination, :not_done).flow()
+      nextPiece = Inlet.new(piece.destination, :not_done).flow(expansion.call(msg))
       if (nextPiece.is_a? Result) then
         nextPiece
       else
@@ -81,14 +81,13 @@ end
 
 class PipelineBuilder
   include Buildering
-  def initialize(source)
-    @source = source
+  def initialize()
     @do_these_things = []
   end
 
   def answer_int(piece)
     if (@do_these_things.empty?)
-      Inlet.new(@source, piece)
+      Inlet.new(piece)
     else
       answer_int(Piece.new(piece, @do_these_things.pop))
     end
@@ -189,19 +188,22 @@ class Piece
 end
 
 class Inlet
-  def initialize(source, nextPiece, done_or_not = :done)
-    @source = source.each #iterator
+  def initialize(nextPiece, done_or_not = :done)
     @nextPiece = nextPiece
     @done_or_not = done_or_not
   end
 
-  def flow
+  def flow(source)
+     flow_internal(source.each)
+  end
+
+  def flow_internal(source)
     result = begin
-      response = @nextPiece.receive(@source.next)
+      response = @nextPiece.receive(source.next)
       if (response.is_a? Result) then
         response
       else #it's another piece
-        Inlet.new(@source, response, @done_or_not).flow
+        Inlet.new(response, @done_or_not).flow_internal(source)
       end
     rescue StopIteration
       if (@done_or_not == :done) then
