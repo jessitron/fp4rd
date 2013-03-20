@@ -66,7 +66,7 @@ describe PipelineBuilder do
     it 'can widen the pipe' do
       array_of_chars = ->(s) {s.each_char}
       is_vowel = ->(c) {"aeiou".include?(c)}
-      result = PipelineBuilder.new().
+      result = PipelineBuilder.new.
         expand(array_of_chars).
         keeping(is_vowel).
         answer(Monoid.concat)

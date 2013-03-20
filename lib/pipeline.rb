@@ -83,7 +83,7 @@ class PipelineBuilder
 
   def answer_int(piece)
     if (@do_these_things.empty?)
-      Inlet.new(piece)
+      piece
     else
       answer_int(Piece.new(piece, @do_these_things.pop))
     end
@@ -105,10 +105,17 @@ class PartialBuilder
   end
 end
 
+module PieceCommon
+  def flow(source)
+     Inlet.new(self).flow_internal(source.each)
+  end
+end
+
 class JointPiece
   def initialize(paths)
     @paths = paths
   end
+  include PieceCommon
 
   def receive(msg)
     go = ->(v) { v.is_a?(Result) ? v : v.receive(msg) }
@@ -160,10 +167,7 @@ end
 
 class Piece
   attr_reader :destination
-
-  def flow(source)
-     Inlet.new(this).flow_internal(source.each)
-  end
+  include PieceCommon
 
   def initialize(destination, what_to_do)
     @destination = destination
@@ -193,6 +197,10 @@ class Inlet
     @done_or_not = done_or_not
   end
 
+  def flow(source)
+    flow_internal(source.each)
+  end
+
   def flow_internal(source)
     result = begin
       response = @nextPiece.receive(source.next)
@@ -212,6 +220,7 @@ class Inlet
 end
 
 class CountingEndPiece
+  include PieceCommon
   def initialize(soFar = 0)
     @soFar = soFar
   end
@@ -224,6 +233,7 @@ class CountingEndPiece
 end
 
 class EndPiece
+  include PieceCommon
   def initialize(monoid)
     @monoid = monoid
     @soFar = monoid.zero
