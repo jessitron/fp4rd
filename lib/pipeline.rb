@@ -139,19 +139,11 @@ class CompoundResult
     @contents = paths
   end
 
-  def value(path = :not_supplied)
-    if(path == :not_supplied) then
-      self
-    elsif(path.is_a? Array) then
-      if (path.length == 1) then
-        @contents[path[0]].value
-      else
-        (head, *tail) = path
-        @contents[head].value(tail)
-      end
-    else
-      @contents[path].value
-    end
+  def value(*path)
+    return self if path.empty?
+    (head, *tail) = path
+    puts "Nothing found at #{head}" unless @contents[head]
+    @contents[head].value(*tail)
   end
 end
 

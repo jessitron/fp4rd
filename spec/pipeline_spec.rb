@@ -93,8 +93,8 @@ describe Pipe do
       )
       output = result.flow(input)
       output.value(:allConcatenated).should == "onetwo"
-      output.value([:all,:onlyFirst]).should == "one"
-      output.value([:all,:concatenatedAgain]).should == "onetwo"
+      output.value(:all,:onlyFirst).should == "one"
+      output.value(:all,:concatenatedAgain).should == "onetwo"
     end
 
     it 'can split immediately after an expansion' do

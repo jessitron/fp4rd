@@ -32,8 +32,8 @@ pipe = Pipe.new.
 
 result = pipe.flow(ARGV)
 
-total = result.value([:valid,:total])
-count = result.value([:valid,:count])
+total = result.value(:valid, :total)
+count = result.value(:valid, :count)
 errors = result.value(:invalid)
 
 puts("Total price for #{count} books: #{total}")
