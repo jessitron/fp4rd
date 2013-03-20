@@ -75,7 +75,7 @@ module Buildering
 
 end
 
-class PipelineBuilder
+class Pipe
   include Buildering
   def initialize
     @do_these_things = []
