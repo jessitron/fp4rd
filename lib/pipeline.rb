@@ -31,14 +31,10 @@ module Buildering
   end
 
   def split(paths)
-    answer_int(JointPiece.new(paths.map_values( &partial)))
+    answer_int(JointPiece.new(paths))
   end
 
   module_function
-  def partial
-    ->(v) { v.call(PartialBuilder.new)}
-  end
-
   def takeFunction(how_many) # this will either return a Result or a Piece
     what_to_do = ->(piece, msg) do
       if (how_many == 0) then # this is a little inefficient. One extra piece of info will be read
@@ -81,7 +77,7 @@ end
 
 class PipelineBuilder
   include Buildering
-  def initialize()
+  def initialize
     @do_these_things = []
   end
 
