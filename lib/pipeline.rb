@@ -49,7 +49,7 @@ module Buildering
   def expandFunction(expansion)
     ->(piece, msg) do
       nextPiece = Inlet.new(piece.destination, :not_done).flow(expansion.call(msg))
-      if (nextPiece.is_a? Result) then
+      if (nextPiece.result?) then
         nextPiece
       else
         Piece.new(nextPiece, expandFunction(expansion))
@@ -94,6 +94,9 @@ module PieceCommon
   def flow(source)
      Inlet.new(self).flow_internal(source.each)
   end
+  def result?
+    false
+  end
 end
 
 class JointPiece
@@ -103,10 +106,9 @@ class JointPiece
   include PieceCommon
 
   def receive(msg)
-    go = ->(v) { v.is_a?(Result) ? v : v.receive(msg) }
+    go = ->(v) { v.result? ? v : v.receive(msg) }
     newMap = @paths.map_values(&go)
-    is_result = ->(p) {p.is_a? Result}
-    if (newMap.values.all? &is_result )
+    if (newMap.values.all? &:result? )
       construct_compound_result(newMap)
     else
       JointPiece.new(newMap)
@@ -114,7 +116,7 @@ class JointPiece
   end
 
   def eof
-    go = ->(v) { v.is_a?(Result) ? v : v.eof }
+    go = ->(v) { v.result? ? v : v.eof }
     newMap = @paths.map_values(&go)
     construct_compound_result(newMap)
   end
@@ -126,6 +128,9 @@ class JointPiece
 end
 
 module Result
+  def result?
+    true
+  end
 end
 
 class CompoundResult
@@ -189,7 +194,7 @@ class Inlet
   def flow_internal(source)
     result = begin
       response = @nextPiece.receive(source.next)
-      if (response.is_a? Result) then
+      if (response.result?) then
         response
       else #it's another piece
         Inlet.new(response, @done_or_not).flow_internal(source)
