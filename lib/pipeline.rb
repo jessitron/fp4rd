@@ -161,6 +161,10 @@ end
 class Piece
   attr_reader :destination
 
+  def flow(source)
+     Inlet.new(this).flow_internal(source.each)
+  end
+
   def initialize(destination, what_to_do)
     @destination = destination
     @what_to_do = what_to_do
@@ -187,10 +191,6 @@ class Inlet
   def initialize(nextPiece, done_or_not = :done)
     @nextPiece = nextPiece
     @done_or_not = done_or_not
-  end
-
-  def flow(source)
-     flow_internal(source.each)
   end
 
   def flow_internal(source)
