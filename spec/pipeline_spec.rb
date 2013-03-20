@@ -67,18 +67,28 @@ describe PipelineBuilder do
       result.flow().value.should == "oeo"
     end
 
+    #         /---------------------\
+    #a       /   :allConcatenated    = concatenated: "onetwo"
+    # --------    /-----------------/
+    #            <           /------------------------\
+    # --------    \         /    :onlyFirst | limit(1) = concatenated: "one"
+    #        \     ---------    /---------------------/
+    #         \   :all         <
+    #          \------------    \-------------------\
+    #                       \    :concatenatedAgain = concatenated: "onetwo"
+    #                        \----------------------/
     it 'can nest splits and follow the paths' do
       result = PipelineBuilder.new(["one","two"]).
-        split(first:  ->(a) {a.answer(Monoid.concat)},
-              second: ->(a) {a.
-                split(third: ->(a) { a.take(1).answer(Monoid.concat)},
-                      fourth: ->(a) { a.answer(Monoid.concat)}
+        split(allConcatenated:  ->(a) {a.answer(Monoid.concat)},
+              all: ->(a) {a.
+                split(onlyFirst: ->(a) { a.take(1).answer(Monoid.concat)},
+                      concatenatedAgain: ->(a) { a.answer(Monoid.concat)}
                      )
       })
       output = result.flow()
-      output.value(:first).should == "onetwo"
-      output.value([:second,:third]).should == "one"
-      output.value([:second,:fourth]).should == "onetwo"
+      output.value(:allConcatenated).should == "onetwo"
+      output.value([:all,:onlyFirst]).should == "one"
+      output.value([:all,:concatenatedAgain]).should == "onetwo"
     end
 
     it 'can split immediately after an expansion' do
