@@ -147,8 +147,10 @@ class CompoundResult
     @contents = paths
   end
 
-  def value(path)
-    if(path.is_a? Array) then
+  def value(path = :not_supplied)
+    if(path == :not_supplied) then
+      self
+    elsif(path.is_a? Array) then
       if (path.length == 1) then
         @contents[path[0]].value
       else

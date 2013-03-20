@@ -39,20 +39,25 @@ describe PipelineBuilder do
     let(:new_builder) { PipelineBuilder.new(input) }
     let(:builder) { new_builder }
 
-    subject { builder.answer(Monoid.plus).flow().value }
+    subject { builder.flow().value }
 
     describe 'adding' do
+      let(:builder) { new_builder.answer(Monoid.plus) }
       it { should == 6 }
     end
 
-    it 'can split the pipe' do
-      double = ->(a) { a * 2}
-      result = PipelineBuilder.new([1,2,3]).
+    describe 'can split the pipe' do
+      double = ->(a) { a * 2 }
+      let(:builder) { new_builder.
         split({ total: ->(a) {a.answer(Monoid.plus)},
-              double_the_first: ->(a) {a.take(1).through(double).answer(Monoid.plus)}})
-      answer = result.flow()
-      answer.value(:total).should == 6
-      answer.value(:double_the_first).should == 2
+             double_the_first: ->(a) {a.take(1).through(double).answer(Monoid.plus)}})
+      }
+      it 'should have a total of 6'do
+        subject.value(:total).should == 6
+      end
+      it 'should have 2 at the end of the doubling the first pipe' do
+        subject.value(:double_the_first).should == 2
+      end
     end
   end
 
@@ -68,7 +73,7 @@ describe PipelineBuilder do
     end
 
     #         /---------------------\
-    #a       /   :allConcatenated    = concatenated: "onetwo"
+    #        /   :allConcatenated    = concatenated: "onetwo"
     # --------    /-----------------/
     #            <           /------------------------\
     # --------    \         /    :onlyFirst | limit(1) = concatenated: "one"
