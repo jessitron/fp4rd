@@ -49,8 +49,8 @@ describe PipelineBuilder do
     describe 'can split the pipe' do
       double = ->(a) { a * 2 }
       let(:builder) { new_builder.
-        split({ total: PartialBuilder.new.answer(Monoid.plus),
-             double_the_first: PartialBuilder.new.take(1).through(double).answer(Monoid.plus)})
+        split({ total: PipelineBuilder.new.answer(Monoid.plus),
+             double_the_first: PipelineBuilder.new.take(1).through(double).answer(Monoid.plus)})
       }
       it 'should have a total of 6'do
         subject.value(:total).should == 6
@@ -85,10 +85,10 @@ describe PipelineBuilder do
     #                        \----------------------/
     it 'can nest splits and follow the paths' do
       result = PipelineBuilder.new().
-        split(allConcatenated:  PartialBuilder.new.answer(Monoid.concat),
-              all: PartialBuilder.new.
-                split(onlyFirst: PartialBuilder.new.take(1).answer(Monoid.concat),
-                      concatenatedAgain: PartialBuilder.new.answer(Monoid.concat)
+        split(allConcatenated:  PipelineBuilder.new.answer(Monoid.concat),
+              all: PipelineBuilder.new.
+                split(onlyFirst: PipelineBuilder.new.take(1).answer(Monoid.concat),
+                      concatenatedAgain: PipelineBuilder.new.answer(Monoid.concat)
                      )
       )
       output = result.flow(input)
@@ -103,8 +103,8 @@ describe PipelineBuilder do
       notnot = ->(p) { ->(a) {!p.call(a)}}
       result = PipelineBuilder.new().
         expand(array_of_chars).
-        split({ vowels: PartialBuilder.new.keeping(is_vowel).count,
-              consonants: PartialBuilder.new.keeping(notnot.(is_vowel)).count
+        split({ vowels: PipelineBuilder.new.keeping(is_vowel).count,
+              consonants: PipelineBuilder.new.keeping(notnot.(is_vowel)).count
       })
       output = result.flow(["one","two", "three"])
       output.value(:vowels).should == 5
