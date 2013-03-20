@@ -15,23 +15,22 @@ end
 
 #todo: implement partition, cleaner than split and check both sides
 
-pipe = PipelineBuilder.new(ARGV).
+pipe = Pipe.new.
   expand(printing.("--- Reading file...",read_all_lines)).
   through(printing.("1. Converting book",convert_row_to_book)).
   through(printing.("2. Checking price",reject_no_price)).
-  split({
-    :invalid => ->(a) { a.keeping(->(a){a.invalid?}).count},
-    :valid => ->(a) {
-      a.keeping(printing.("3a. Checking book", ->(a){a.book?})).
-      split({ :count => ->(a) {a.count},
-              :total => ->(a) { a.
+  split(
+    invalid: Pipe.new.keeping(->(a){a.invalid?}).count,
+    valid: Pipe.new.keeping(printing.("3a. Checking book", ->(a){a.book?})).
+      split( count: Pipe.new.count,
+             total: Pipe.new.
         through(printing.("3b. Extracting book", ->(a){a.book})).
         through(printing.("4. Pricing",->(a){a.price})).
         answer(Monoid.plus)
-      }})
-  }})
+      )
+  )
 
-result = pipe.flow()
+result = pipe.flow(ARGV)
 
 total = result.value([:valid,:total])
 count = result.value([:valid,:count])
