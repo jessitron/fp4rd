@@ -15,18 +15,18 @@ end
 
 #todo: implement partition, cleaner than split and check both sides
 
-pipe = Pipe.new.
+pipe = Pipeline::Pipe.new.
   expand(printing.("--- Reading file...",read_all_lines)).
   through(printing.("1. Converting book",convert_row_to_book)).
   through(printing.("2. Checking price",reject_no_price)).
   split(
-    invalid: Pipe.new.keeping(->(a){a.invalid?}).count,
-    valid: Pipe.new.keeping(printing.("3a. Checking book", ->(a){a.book?})).
-      split( count: Pipe.new.count,
-             total: Pipe.new.
+    invalid: Pipeline::Pipe.new.keeping(->(a){a.invalid?}).count,
+    valid: Pipeline::Pipe.new.keeping(printing.("3a. Checking book", ->(a){a.book?})).
+      split( count: Pipeline::Pipe.new.count,
+             total: Pipeline::Pipe.new.
         through(printing.("3b. Extracting book", ->(a){a.book})).
         through(printing.("4. Pricing",->(a){a.price})).
-        answer(Monoid.plus)
+        answer(Pipeline::Monoid.plus)
       )
   )
 
