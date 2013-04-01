@@ -1,3 +1,7 @@
+# only passing a block works.
+# Procs always LocalJumpError on break
+# Lambdas either LocalJumpError or ignore it completely, depending on how they're called
+
 class EachWithBlock
   include Enumerable
   attr_reader :times_around, :after_called
@@ -38,13 +42,13 @@ describe "break" do
   let(:cwb) { EachWithBlock.new }
   let(:cwy) { EachWithYield.new }
   describe "block that uses break" do
-    it "breaks when called with yield, but continues loop" do
+    it "breaks when called with yield" do
       t = cwy
       (t.each { |i| break "stuff #{i}" if (i > 1)}).should == "stuff 2"
-      t.after_called.should be_false #statements -after- the loop are not executed
+      t.after_called.should be_false
       t.times_around.should == 1
     end
-    it "throws LocalJumpError when called with block, but completes loop" do
+    it "breaks when called with block" do
       t = cwb
       (t.each { |i| break "stuff #{i}" }).should == "stuff 1"
       t.after_called.should be_false

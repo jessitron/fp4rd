@@ -1,3 +1,10 @@
+#
+# Summary: the only reliable part is using lambdas and calling them
+# with .call.
+# Procs, blocks, and yield all screw it up.
+#
+
+
 class CallWithBlock
   attr_reader :after_called
   def initialize
