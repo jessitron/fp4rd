@@ -86,7 +86,7 @@ module Pipeline
       #                        \----------------------/
       it 'can nest splits and follow the paths' do
         result = Pipe.new.
-          split(allConcatenated:  Pipe.new.answer(Monoid.concat),
+          split(allConcatenated: Pipe.new.answer(Monoid.concat),
                 all: Pipe.new.
                 split(onlyFirst: Pipe.new.take(1).answer(Monoid.concat),
                       concatenatedAgain: Pipe.new.answer(Monoid.concat)
