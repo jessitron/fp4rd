@@ -10,7 +10,7 @@ class EachWithBlock
   end
   def each &call_me
     raise ArgumentError.new("bad, dont call this again") if @times_around != 0
-    for i in 1..3 do
+    (1..3).each do |i|
       call_me.call i
       @times_around += 1
     end
@@ -27,7 +27,7 @@ class EachWithYield
   end
   def each
     @times_around = 0
-    for i in 1..3 do
+    (1..3).each do |i|
       yield i
       @times_around += 1
     end
