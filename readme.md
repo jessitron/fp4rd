@@ -6,6 +6,9 @@ Heck, maybe _freedom_ isn't the end-all and be-all.
 
 There are values from functional programming that are relevant to Ruby. Skip all the terminology and the esoteric category theory stuff, and think about why functional programmers do things the way they do. This is what might be universally relevant.
 
+(The interesting parts of this repo are the tags at different steps in
+the progression from PickAxe to weirdly functional.)
+
 ### Basics of Ruby ###
 
 Start with the PickAxe, Chapter 3. The sample program there parses a simple CSV file about bookstore inventory, puts each line into a BookInStock object, and then performs a simple calculation: total the prices of all books.
@@ -46,7 +49,7 @@ I made the CsvReader class immutable, by duplicating and freezing its input and 
 Testing this, I don't mock Ruby's CSV library. I test my integration with it. In Java-land, we don't mock the standard libraries. For one, we can't. For two, that doesn't prove that I'm using them correctly. If a test doesn't prove anything useful, is it a good test?
 
 #### Concern: translate to instance ####
-Translation of CSV rows to BookInStocks becomes a class method. It should be independently testable, not tied to an instance of anything, and BookInStock is a good namespace for it. 
+Translation of CSV rows to BookInStocks becomes a class method. It should be independently testable, not tied to an instance of anything, and BookInStock is a good namespace for it.
 
 Ruby's dynamic typing comes in handy here; a CSV::Row and a hash behave the same way for all I care, so test input is easy to create. That's be way harder in Scala.
 
@@ -95,7 +98,7 @@ No. Blocks and procs are dirty stepchildren. They're not functions; they're chun
 
 In a lambda, when you say "return," it does the rational, unsurprising thing of returning from the lambda back to wherever it was called. Because lambdas are functions.
 
-Blocks and (non-lambda) Procs are not functions. When "return" or "break" appears in them, they break not from their own scope, but out of scope above them. It's a mess. 
+Blocks and (non-lambda) Procs are not functions. When "return" or "break" appears in them, they break not from their own scope, but out of scope above them. It's a mess.
 
 So yes, Ruby supports a functional style, WITH LAMBDAS.
 
@@ -113,6 +116,41 @@ A functional way to handle errors is the Either class. Either holds one of two t
 
 Once the Either class is available, the translation from CSV rows changes to output an Either(book or error). Then, we can select only the books for the price calculations. We can select the errors for reporting. This is the best we can do with inconsistent data.
 
+### Chapter 3: Nil is not data. ###
+
+It just isn't. Nil has too many disparate meanings to mean any one
+thing.
+
+### Chapter 4: Functional composition ###
+
+In which I decide I want all the steps to print a report that they're
+happening, so I can see the execution order. To do this, wrap each of
+them in a function that (1) prints a message and (2) calls the wrapped
+function. This beats the snot out of going into each function that does
+something and telling it to print a message.
+
+### Chapter 5: Laziness ###
+
+Now that I can see the execution order, it's time to mess with it.
+The Level4 implementation reads in all the files; maps all the rows;
+selects all the rows; etc. This only works if all the data fits in
+memory at once.
+Say it doesn't - say we want to read each file line by line,
+accumulating the total price as we go, and then forgetting that line so
+that we don't run out of memory.
+
+add ".lazy" after our first Enumerable and bam, we're done. Now files
+are read one at a time and lines are parsed one at a time.
+
+The negative is, if after that I decide to count the errors, all the
+reading happens again.
+
+### Chapter 6: Pipeline ###
+
+So I implement a funny-looking framework that constructs the whole
+pipeline, complete with splits which send the data both ways so it can
+be both counted and totaled. The data is pushed through the pipeline
+once and all totals are calculated as it goes.
 
 
 
