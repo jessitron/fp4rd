@@ -15,23 +15,19 @@ module Pipeline
     end
 
     def take(how_many)
-      @do_these_things.push(takeFunction(how_many))
-      self
+      attach(takeFunction(how_many))
     end
 
     def keeping(predicate)
-      @do_these_things.push(filterFunction(predicate))
-      self
+      attach(filterFunction(predicate))
     end
 
     def through(transform)
-      @do_these_things.push(mapFunction(transform))
-      self
+      attach(mapFunction(transform))
     end
 
     def expand(transform)
-      @do_these_things.push(expandFunction(transform))
-      self
+      attach(expandFunction(transform))
     end
 
     def split(paths)
