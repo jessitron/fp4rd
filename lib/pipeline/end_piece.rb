@@ -4,17 +4,17 @@ require_relative 'simple_result'
 module Pipeline
   class EndPiece
     include PieceCommon
-    def initialize(monoid, soFar = :no_value)
+    def initialize(monoid, so_far = :no_value)
       @monoid = monoid
-      @soFar = (soFar == :no_value) ? monoid.zero : soFar
+      @so_far = (so_far == :no_value) ? monoid.zero : so_far
     end
 
     def eof
-      SimpleResult.new(@soFar)
+      SimpleResult.new(@so_far)
     end
 
     def receive msg
-      EndPiece.new(@monoid, @monoid.append(@soFar, msg))
+      EndPiece.new(@monoid, @monoid.append(@so_far, msg))
     end
   end
 end

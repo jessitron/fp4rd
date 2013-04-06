@@ -3,14 +3,14 @@ require_relative 'piece_common'
 module Pipeline
   class CountingEndPiece
     include PieceCommon
-    def initialize(soFar = 0)
-      @soFar = soFar
+    def initialize(so_far = 0)
+      @so_far = so_far
     end
     def eof
-      SimpleResult.new(@soFar)
+      SimpleResult.new(@so_far)
     end
     def receive msg
-      CountingEndPiece.new(@soFar + 1)
+      CountingEndPiece.new(@so_far + 1)
     end
   end
 end

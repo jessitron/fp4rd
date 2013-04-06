@@ -75,14 +75,14 @@ module Pipeline
       end
 
       #         /---------------------\
-      #        /   :allConcatenated    = concatenated: "onetwo"
+      #        /   :all_concatenated    = concatenated: "onetwo"
       # --------    /-----------------/
       #            <           /------------------------\
-      # --------    \         /    :onlyFirst | limit(1) = concatenated: "one"
+      # --------    \         /    :only_first | limit(1) = concatenated: "one"
       #        \     ---------    /---------------------/
       #         \   :all         <
       #          \------------    \-------------------\
-      #                       \    :concatenatedAgain = concatenated: "onetwo"
+      #                       \    :concatenated_again = concatenated: "onetwo"
       #                        \----------------------/
       it 'can nest splits and follow the paths' do
         result = Pipe.new.
