@@ -86,16 +86,16 @@ module Pipeline
       #                        \----------------------/
       it 'can nest splits and follow the paths' do
         result = Pipe.new.
-          split(allConcatenated: Pipe.new.answer(Monoid.concat),
+          split(all_concatenated: Pipe.new.answer(Monoid.concat),
                 all: Pipe.new.
-                split(onlyFirst: Pipe.new.take(1).answer(Monoid.concat),
-                      concatenatedAgain: Pipe.new.answer(Monoid.concat)
+                split(only_first: Pipe.new.take(1).answer(Monoid.concat),
+                      concatenated_again: Pipe.new.answer(Monoid.concat)
                      )
                )
                output = result.flow(input)
-               output.value(:allConcatenated).should == "onetwo"
-               output.value(:all,:onlyFirst).should == "one"
-               output.value(:all,:concatenatedAgain).should == "onetwo"
+               output.value(:all_concatenated).should == "onetwo"
+               output.value(:all,:only_first).should == "one"
+               output.value(:all,:concatenated_again).should == "onetwo"
       end
 
       it 'can split immediately after an expansion' do

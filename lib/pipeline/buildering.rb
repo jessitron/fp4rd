@@ -15,19 +15,19 @@ module Pipeline
     end
 
     def take(how_many)
-      attach(takeFunction(how_many))
+      attach(take_function(how_many))
     end
 
     def keeping(predicate)
-      attach(filterFunction(predicate))
+      attach(filter_function(predicate))
     end
 
     def through(transform)
-      attach(mapFunction(transform))
+      attach(map_function(transform))
     end
 
     def expand(transform)
-      attach(expandFunction(transform))
+      attach(expand_function(transform))
     end
 
     def split(paths)
@@ -35,38 +35,38 @@ module Pipeline
     end
 
     module_function
-    def takeFunction(how_many) # this will either return a Result or a Piece
+    def take_function(how_many) # this will either return a Result or a Piece
       what_to_do = ->(piece, msg) do
         if (how_many == 0) then # this is a little inefficient. One extra piece of info will be read
-          piece.sendEof
+          piece.send_eof
         else
-          piece.passOn(msg, takeFunction(how_many -1))
+          piece.pass_on(msg, take_function(how_many -1))
         end
       end
       what_to_do
     end
 
-    def expandFunction(expansion)
+    def expand_function(expansion)
       ->(piece, msg) do
-        nextPiece = Inlet.new(piece.destination, :not_done).flow(expansion.call(msg))
-        if (nextPiece.result?) then
-          nextPiece
+        next_piece = Inlet.new(piece.destination, :not_done).flow(expansion.call(msg))
+        if (next_piece.result?) then
+          next_piece
         else
-          Piece.new(nextPiece, expandFunction(expansion))
+          Piece.new(next_piece, expand_function(expansion))
         end
       end
     end
 
-    def mapFunction(transform)
+    def map_function(transform)
       ->(piece, msg) do
-        piece.passOn(transform.call(msg), mapFunction(transform))
+        piece.pass_on(transform.call(msg), map_function(transform))
       end
     end
 
-    def filterFunction(predicate)
+    def filter_function(predicate)
       ->(piece, msg) do
         if(predicate.call(msg)) then
-          piece.passOn(msg, filterFunction(predicate))
+          piece.pass_on(msg, filter_function(predicate))
         else
           piece #don't change
         end

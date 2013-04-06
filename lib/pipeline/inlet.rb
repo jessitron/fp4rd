@@ -1,7 +1,7 @@
 module Pipeline
   class Inlet
-    def initialize(nextPiece, done_or_not = :done)
-      @nextPiece = nextPiece
+    def initialize(next_piece, done_or_not = :done)
+      @next_piece = next_piece
       @done_or_not = done_or_not
     end
 
@@ -11,7 +11,7 @@ module Pipeline
 
     def flow_internal(source)
       result = begin
-                 response = @nextPiece.receive(source.next)
+                 response = @next_piece.receive(source.next)
                  if (response.result?) then
                    response
                  else #it's another piece
@@ -19,9 +19,9 @@ module Pipeline
                  end
                rescue StopIteration
                  if (@done_or_not == :done) then
-                   @nextPiece.eof
+                   @next_piece.eof
                  else
-                   @nextPiece
+                   @next_piece
                  end
                end
     end

@@ -10,18 +10,18 @@ module Pipeline
 
     def receive(msg)
       go = ->(v) { v.result? ? v : v.receive(msg) }
-      newMap = @paths.map_values(&go)
-      if (newMap.values.all? &:result? )
-        construct_compound_result(newMap)
+      new_map = @paths.map_values(&go)
+      if (new_map.values.all? &:result? )
+        construct_compound_result(new_map)
       else
-        JointPiece.new(newMap)
+        JointPiece.new(new_map)
       end
     end
 
     def eof
       go = ->(v) { v.result? ? v : v.eof }
-      newMap = @paths.map_values(&go)
-      construct_compound_result(newMap)
+      new_map = @paths.map_values(&go)
+      construct_compound_result(new_map)
     end
 
     private

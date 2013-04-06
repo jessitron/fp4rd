@@ -15,14 +15,14 @@ module Pipeline
     end
 
     def eof
-      sendEof
+      send_eof
     end
 
-    def passOn(msg, what_to_do_next)
+    def pass_on(msg, what_to_do_next)
       next_destination = @destination.receive(msg)
       Piece.new(next_destination, what_to_do_next)
     end
-    def sendEof
+    def send_eof
       @destination.eof
     end
   end
