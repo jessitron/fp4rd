@@ -1,6 +1,6 @@
+require 'aqueductron'
 require_relative 'csv_reader'
 require_relative 'book_in_stock'
-require_relative 'pipeline'
 
 printing = ->(message, map_func) { ->(a) { puts message; map_func.call(a)} }
 convert_row_to_book = ->(row) { BookInStock.from_row(row) }
@@ -11,18 +11,18 @@ reject_no_price = ->(either) do
   else either end
 end
 
-pipe = Pipeline::Pipe.new.
+pipe = Aqueductron::Duct.new.
   expand(printing.("--- Reading file...",read_all_lines)).
   through(printing.("1. Converting book",convert_row_to_book)).
   through(printing.("2. Checking price",reject_no_price)).
   split(
-    invalid: Pipeline::Pipe.new.keeping(->(a){a.invalid?}).count,
-    valid: Pipeline::Pipe.new.keeping(printing.("3a. Checking book", ->(a){a.book?})).
-      split( count: Pipeline::Pipe.new.count,
-             total: Pipeline::Pipe.new.
+    invalid: Aqueductron::Duct.new.keeping(->(a){a.invalid?}).count,
+    valid: Aqueductron::Duct.new.keeping(printing.("3a. Checking book", ->(a){a.book?})).
+      split( count: Aqueductron::Duct.new.count,
+             total: Aqueductron::Duct.new.
         through(printing.("3b. Extracting book", ->(a){a.book})).
         through(printing.("4. Pricing",->(a){a.price})).
-        answer(Pipeline::Monoid.plus)
+        answer(Aqueductron::Monoid.plus)
       )
   )
 

@@ -71,7 +71,7 @@ describe "next" do
 
   describe "rspec" do
     it "works  on a lambda next; it's using block.call" do
-      lambda { next "stuff"}.should_not raise_error(LocalJumpError)
+      lambda { next "stuff"}.should_not raise_error()
     end
   end
 
