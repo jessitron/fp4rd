@@ -1,6 +1,6 @@
+require 'aqueductron'
 require_relative 'csv_reader'
 require_relative 'book_in_stock'
-require_relative 'aqueductron'
 
 printing = ->(message, map_func) { ->(a) { puts message; map_func.call(a)} }
 convert_row_to_book = ->(row) { BookInStock.from_row(row) }
