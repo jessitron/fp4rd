@@ -73,7 +73,7 @@ describe "return" do
 
   describe "rspec" do
     it "works  on a lambda return; it's using block.call" do
-      lambda { return "stuff"}.should_not raise_error(LocalJumpError)
+      lambda { return "stuff"}.should_not raise_error()
     end
   end
 

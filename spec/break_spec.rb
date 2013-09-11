@@ -86,7 +86,7 @@ describe "break" do
 
   describe "rspec" do
     it "works  on a lambda break; it's using block.call" do
-      lambda { break "stuff"}.should_not raise_error(LocalJumpError)
+      lambda { break "stuff"}.should_not raise_error()
     end
   end
 
