@@ -6,6 +6,8 @@ Heck, maybe _freedom_ isn't the end-all and be-all.
 
 There are values from functional programming that are relevant to Ruby. Skip all the terminology and the esoteric category theory stuff, and think about why functional programmers do things the way they do. This is what might be universally relevant.
 
+Here is the [video of this talk on confreaks](http://www.confreaks.com/videos/2382-rmw2013-functional-principles-for-oo-development)
+
 ## Interesting iteratees ##
 If you're here to see the solution I referenced in my talk, which
 processes files for multiple results without reading them all in at
@@ -99,7 +101,7 @@ Ruby has first-class functions: in lambdas.
 
 "And blocks, and Procs!"
 
-No. Blocks and procs are dirty stepchildren. They're not functions; they're chunks of code, and they do crazy things with flow control.
+No. Blocks and procs are [dirty stepchildren](http://blog.jessitron.com/2013/03/passing-functions-in-ruby-harder-than.html). They're not functions; they're chunks of code, and they do crazy things with flow control.
 
 In a lambda, when you say "return," it does the rational, unsurprising thing of returning from the lambda back to wherever it was called. Because lambdas are functions.
 
@@ -135,8 +137,47 @@ we can't include it in the total -- that's a different problem. Ideally,
 our program outputs all the prices it can total, along with counts of
 the ones we could not total and why.
 
+### Chapter 3: Nil is not data. ###
+
+It just isn't. Nil has too many disparate meanings to mean any one
+thing.
+
+### Chapter 4: Functional composition ###
+
+In which I decide I want all the steps to print a report that they're
+happening, so I can see the execution order. To do this, wrap each of
+them in a function that (1) prints a message and (2) calls the wrapped
+function. This beats the snot out of going into each function that does
+something and telling it to print a message.
+
+### Chapter 5: Laziness ###
+
+Now that I can see the execution order, it's time to mess with it.
+The Level4 implementation reads in all the files; maps all the rows;
+selects all the rows; etc. This only works if all the data fits in
+memory at once.
+Say it doesn't - say we want to read each file line by line,
+accumulating the total price as we go, and then forgetting that line so
+that we don't run out of memory.
+
+add ".lazy" after our first Enumerable and bam, we're done. Now files
+are read one at a time and lines are parsed one at a time.
+
+The negative is, if after that I decide to count the errors, all the
+reading happens again.
+
+### Chapter 6: Pipeline ###
+
+So I implement a funny-looking framework that constructs the whole
+pipeline, complete with splits which send the data both ways so it can
+be both counted and totaled. The data is pushed through the pipeline
+once and all totals are calculated as it goes.
+
+Find this in the [iteratee branch](https://github.com/jessitron/fp4rd/tree/iteratees)
+
 #### and so on
 There's more to this, as explained in the talk.
 Check the [video on confreaks](http://www.confreaks.com/videos/2382-rmw2013-functional-principles-for-oo-development)
+
 
 
