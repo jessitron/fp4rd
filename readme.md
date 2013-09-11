@@ -6,6 +6,11 @@ Heck, maybe _freedom_ isn't the end-all and be-all.
 
 There are values from functional programming that are relevant to Ruby. Skip all the terminology and the esoteric category theory stuff, and think about why functional programmers do things the way they do. This is what might be universally relevant.
 
+## Interesting iteratees ##
+If you're here to see the solution I referenced in my talk, which
+processes files for multiple results without reading them all in at
+once, then check the [iteratees branch](https://github.com/jessitron/fp4rd/tree/iteratees).
+
 ### Basics of Ruby ###
 
 Start with the PickAxe, Chapter 3. The sample program there parses a simple CSV file about bookstore inventory, puts each line into a BookInStock object, and then performs a simple calculation: total the prices of all books.
@@ -28,7 +33,7 @@ Now, my Ruby dev friends tell me no, no, you just inject the state you want! You
 
 Tests guide the design of the code. If code is difficult to test using only techniques that are legal in Java, maybe our code is not as clean as it could be.
 
-From this hypothesis, we have experimented with smaller functions - static functions even (class methods in Ruby) - with no dependencies on internal or external state. We have exposed more data, while making it immune to modification. Our classes have grown smaller.
+From this hypothesis, Java devs have experimented with smaller functions - static functions even (class methods in Ruby) - with no dependencies on internal or external state. We have exposed more data, while making it immune to modification. Our classes have grown smaller.
 
 These constraints have driven us to write cleaner code. Now it is time to take these lessons back to Ruby, to the community that taught us the value of testing. Time to pay back some of that favor.
 
@@ -39,16 +44,19 @@ Therefore, I eschew behavioural testing. No state changes, no external interacti
 That CsvReader class in the PickAxe did all kinds of things. It maintained a stateful pile of BookInStocks. It opened files, it translated CSV lines to BookInStocks, and it performed a calculation. Separate all the concerns!
 
 #### Concern: read a file ####
-My version of CsvReader in Level1_DataInDataOut (todo: link the tag) has one job: read a CSV file. It only reads one, and it gets that filename at construction.
+My version of CsvReader in
+[Level1_DataInDataOut](https://github.com/jessitron/fp4rd/tree/Level1_DataInDataOut/lib/csv_reader.rb)
+has one job: read a CSV file. It only reads one, and it gets that filename at construction.
 
-I made the CsvReader class immutable, by duplicating and freezing its input and itself in initialize. In functional, making classes and data immutable is the Right Thing. With all this code whirling around, will something please just hold still?
+I made the CsvReader class immutable, by duplicating and freezing its
+input and itself in initialize. In functional style, making classes and data immutable is the Right Thing. With all this code whirling around, will something please just hold still?
 
 Testing this, I don't mock Ruby's CSV library. I test my integration with it. In Java-land, we don't mock the standard libraries. For one, we can't. For two, that doesn't prove that I'm using them correctly. If a test doesn't prove anything useful, is it a good test?
 
 #### Concern: translate to instance ####
-Translation of CSV rows to BookInStocks becomes a class method. It should be independently testable, not tied to an instance of anything, and BookInStock is a good namespace for it. 
+Translation of CSV rows to BookInStocks becomes a class method. It should be independently testable, not tied to an instance of anything, and BookInStock is a good namespace for it.
 
-Ruby's dynamic typing comes in handy here; a CSV::Row and a hash behave the same way for all I care, so test input is easy to create. That's be way harder in Scala.
+Ruby's dynamic typing comes in handy here; a CSV::Row and a hash behave the same way for all I care, so test input is easy to create. That'd be way harder in Scala.
 
 While we're here, I make BookInStock immutable. The thing about that is, you can't test for all the things your method doesn't do. But you can make some things impossible. Static typists, we like our security blankets. Functional programmers call this "reasoning about code." Ruby devs seem more into trusting each other.
 
@@ -95,7 +103,7 @@ No. Blocks and procs are dirty stepchildren. They're not functions; they're chun
 
 In a lambda, when you say "return," it does the rational, unsurprising thing of returning from the lambda back to wherever it was called. Because lambdas are functions.
 
-Blocks and (non-lambda) Procs are not functions. When "return" or "break" appears in them, they break not from their own scope, but out of scope above them. It's a mess. 
+Blocks and (non-lambda) Procs are not functions. When "return" or "break" appears in them, they break not from their own scope, but out of scope above them. It's a mess.
 
 So yes, Ruby supports a functional style, WITH LAMBDAS.
 
@@ -113,8 +121,22 @@ A functional way to handle errors is the Either class. Either holds one of two t
 
 Once the Either class is available, the translation from CSV rows changes to output an Either(book or error). Then, we can select only the books for the price calculations. We can select the errors for reporting. This is the best we can do with inconsistent data.
 
+What we're accomplishing here is gathering information. The information
+we're hoping to get is books and their prices. When we can't get a book,
+the error message about why is still information. Treating the error as
+data instead of catastophe lets us continue gathering what information
+we do have, instead of crashing.
 
+There are multiple kinds of errors we can get here. We could be unable
+to read the whole file, or lines in the file. Or we could have a line
+with some missing information. If we have a book without an ISBN, then
+we can still consider the price. If we have a book without a price, then
+we can't include it in the total -- that's a different problem. Ideally,
+our program outputs all the prices it can total, along with counts of
+the ones we could not total and why.
 
-
+#### and so on
+There's more to this, as explained in the talk.
+Check the [video on confreaks](http://www.confreaks.com/videos/2382-rmw2013-functional-principles-for-oo-development)
 
 
